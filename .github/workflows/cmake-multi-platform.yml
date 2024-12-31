@@ -1,0 +1,48 @@
+name: CMake Multi-Platform Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        arch: [x86, x64, aarch64]
+        include:
+          - arch: x86
+            cmake_toolchain_file: /usr/share/cmake-3.18/Modules/platforms/Linux-x86.cmake
+          - arch: x64
+            cmake_toolchain_file: /usr/share/cmake-3.18/Modules/platforms/Linux-x64.cmake
+          - arch: aarch64
+            cmake_toolchain_file: /usr/share/cmake-3.18/Modules/platforms/Linux-aarch64.cmake
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up CMake
+      uses: lukka/get-cmake@v2
+      with:
+        cmake-version: 'latest'
+
+    - name: Set up dependencies
+      run: sudo apt-get install -y build-essential
+
+    - name: Create build directory
+      run: mkdir build
+
+    - name: Configure CMake for ${{ matrix.arch }}
+      run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${{ matrix.cmake_toolchain_file }}
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Test
+      run: cd build && ctest --output-on-failure
