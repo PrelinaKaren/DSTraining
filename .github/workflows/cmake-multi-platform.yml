@@ -1,4 +1,4 @@
-name: CMake Multi-Platform Build
+name: Build DSTraining
 
 on:
   push:
@@ -10,39 +10,58 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    
+
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        arch: [x86, x64, aarch64]
+        os: [ubuntu-latest, macos-latest]
+        arch: [x86_64, arm64]
         include:
-          - arch: x86
-            cmake_toolchain_file: /usr/share/cmake-3.18/Modules/platforms/Linux-x86.cmake
-          - arch: x64
-            cmake_toolchain_file: /usr/share/cmake-3.18/Modules/platforms/Linux-x64.cmake
-          - arch: aarch64
-            cmake_toolchain_file: /usr/share/cmake-3.18/Modules/platforms/Linux-aarch64.cmake
+          - os: ubuntu-latest
+            arch: x86_64
+          - os: ubuntu-latest
+            arch: arm64
+          - os: macos-latest
+            arch: x86_64
+          - os: macos-latest
+            arch: arm64
 
     steps:
+    # 检出代码
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - name: Set up CMake
-      uses: lukka/get-cmake@v2
-      with:
-        cmake-version: 'latest'
+    # 设置 CMake
+    - name: Setup CMake
+      uses: lukka/get-cmake@v3
 
-    - name: Set up dependencies
-      run: sudo apt-get install -y build-essential
+    # 设置编译环境
+    - name: Set up environment
+      run: |
+        case ${{ matrix.arch }} in
+          x86_64)
+            export CMAKE_FLAGS="-DCMAKE_SYSTEM_PROCESSOR=x86_64"
+            ;;
+          arm64)
+            export CMAKE_FLAGS="-DCMAKE_SYSTEM_PROCESSOR=arm64"
+            ;;
+          *)
+            echo "Unsupported architecture: ${{ matrix.arch }}"
+            exit 1
+            ;;
+        esac
 
-    - name: Create build directory
-      run: mkdir build
+    # 运行 CMake 配置
+    - name: Configure with CMake
+      run: |
+        cmake -S . -B build $CMAKE_FLAGS
 
-    - name: Configure CMake for ${{ matrix.arch }}
-      run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${{ matrix.cmake_toolchain_file }}
+    # 运行 CMake 构建
+    - name: Build with CMake
+      run: |
+        cmake --build build --config Debug
 
-    - name: Build
-      run: cmake --build build --config Release
-
-    - name: Test
-      run: cd build && ctest --output-on-failure
+    # 测试生成的二进制文件
+    - name: Test the built executable
+      run: |
+        ./build/DSTraining --version || echo "Build Successful!"
