@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 设置 CMake 和 Ninja
+      # 安装 CMake 和 Ninja
       - name: Install CMake and Ninja
         if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
@@ -59,3 +59,14 @@ jobs:
       - name: Test the built executable
         run: |
           ./build/DSTraining --version || echo "Build Successful!"
+
+      # 上传构建产物
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4.5.0
+        with:
+          name: DSTraining-Binaries # 产物名称
+          path: ./build/            # 需要上传的文件路径
+          if-no-files-found: error  # 如果没有文件，操作失败
+          retention-days: 30        # 产物保留时间为 30 天
+          compression-level: 6      # 默认压缩等级
+          include-hidden-files: false
