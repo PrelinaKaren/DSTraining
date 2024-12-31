@@ -2,66 +2,60 @@ name: Build DSTraining
 
 on:
   push:
-    branches:
+    branches: 
       - main
   pull_request:
-    branches:
+    branches: 
       - main
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
         arch: [x86_64, arm64]
-        include:
-          - os: ubuntu-latest
-            arch: x86_64
-          - os: ubuntu-latest
-            arch: arm64
-          - os: macos-latest
-            arch: x86_64
-          - os: macos-latest
-            arch: arm64
 
     steps:
-    # 检出代码
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # 设置 CMake
-    - name: Setup CMake
-      uses: lukka/get-cmake@v3
+      # 设置 CMake 和 Ninja
+      - name: Install CMake and Ninja
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        run: |
+          sudo apt-get update || brew update
+          sudo apt-get install -y cmake ninja-build || brew install cmake ninja
 
-    # 设置编译环境
-    - name: Set up environment
-      run: |
-        case ${{ matrix.arch }} in
-          x86_64)
-            export CMAKE_FLAGS="-DCMAKE_SYSTEM_PROCESSOR=x86_64"
-            ;;
-          arm64)
-            export CMAKE_FLAGS="-DCMAKE_SYSTEM_PROCESSOR=arm64"
-            ;;
-          *)
-            echo "Unsupported architecture: ${{ matrix.arch }}"
-            exit 1
-            ;;
-        esac
+      # 设置编译环境
+      - name: Set up environment
+        run: |
+          case ${{ matrix.arch }} in
+            x86_64)
+              export CMAKE_FLAGS="-DCMAKE_SYSTEM_PROCESSOR=x86_64"
+              ;;
+            arm64)
+              export CMAKE_FLAGS="-DCMAKE_SYSTEM_PROCESSOR=arm64"
+              ;;
+            *)
+              echo "Unsupported architecture: ${{ matrix.arch }}"
+              exit 1
+              ;;
+          esac
+          echo "CMAKE_FLAGS=$CMAKE_FLAGS" >> $GITHUB_ENV
 
-    # 运行 CMake 配置
-    - name: Configure with CMake
-      run: |
-        cmake -S . -B build $CMAKE_FLAGS
+      # CMake 配置
+      - name: Configure with CMake
+        run: |
+          cmake -S . -B build $CMAKE_FLAGS
 
-    # 运行 CMake 构建
-    - name: Build with CMake
-      run: |
-        cmake --build build --config Debug
+      # CMake 构建
+      - name: Build with CMake
+        run: |
+          cmake --build build --config Debug
 
-    # 测试生成的二进制文件
-    - name: Test the built executable
-      run: |
-        ./build/DSTraining --version || echo "Build Successful!"
+      # 测试生成的二进制文件
+      - name: Test the built executable
+        run: |
+          ./build/DSTraining --version || echo "Build Successful!"
