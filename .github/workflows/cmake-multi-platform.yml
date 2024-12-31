@@ -64,9 +64,9 @@ jobs:
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4.5.0
         with:
-          name: DSTraining-Binaries # 产物名称
-          path: ./build/            # 需要上传的文件路径
-          if-no-files-found: error  # 如果没有文件，操作失败
-          retention-days: 30        # 产物保留时间为 30 天
-          compression-level: 6      # 默认压缩等级
+          name: DSTraining-Binaries-${{ matrix.os }}-${{ matrix.arch }} # 确保每个任务的 Artifact 名称唯一
+          path: ./build/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
           include-hidden-files: false
