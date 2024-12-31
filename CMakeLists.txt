@@ -3,4 +3,8 @@ project(DSTraining)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(DSTraining main.cpp)
+add_executable(DSTraining main.cpp
+        maze.h
+        stack.cpp
+        maze.cpp
+        pathfinder.cpp)
