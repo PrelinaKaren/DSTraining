@@ -1,6 +1,18 @@
 #include <stdio.h>
 #include "maze.h"
 
+#ifdef _WIN32
+#include <windows.h>
+
+// 配置控制台为 UTF-8 编码
+void ConfigureConsoleForUTF8() {
+    UINT currentCP = GetConsoleOutputCP();
+    if (currentCP != 65001) {
+        SetConsoleOutputCP(65001);
+    }
+}
+#endif
+
 // 全局变量
 int maze[MAX_SIZE][MAX_SIZE];
 int mark[MAX_SIZE][MAX_SIZE];
@@ -8,7 +20,7 @@ Element stack[MAX_STACK];
 int top = -1;
 int rows, cols;
 
-// 显示程序菜单
+// 显示菜单
 void Menu() {
     int choice;
     char display_attempts;
@@ -34,6 +46,7 @@ void Menu() {
             case 3:
                 GenerateMaze(rows, cols);
                 printf("迷宫已重新生成！\n");
+                DisplayMaze(rows, cols); // 修复遗漏：重新生成后显示新迷宫
                 break;
             case 4:
                 printf("是否显示每次尝试生成的迷宫？(y/n): ");
@@ -50,6 +63,10 @@ void Menu() {
 }
 
 int main() {
+#ifdef _WIN32
+    ConfigureConsoleForUTF8(); // 配置 Windows 控制台为 UTF-8 编码
+#endif
+
     printf("请输入迷宫的行和列数：");
     scanf("%d %d", &rows, &cols);
 
@@ -91,6 +108,8 @@ int main() {
 
     } else if (choice == 'a' || choice == 'A') {
         GenerateMaze(rows, cols);
+        printf("自动生成的迷宫为：\n");
+        DisplayMaze(rows, cols); // 显示自动生成的迷宫
     } else {
         printf("无效选择，请重新运行程序。\n");
         return 1;
