@@ -1,3 +1,4 @@
+//maze.cpp
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -140,5 +141,12 @@ void ShowLoading(int attempt_count) {
 
 // 清空屏幕并将光标移至左上角
 void ClearScreen() {
-    printf("\033[H\033[J"); // ANSI 转义序列，作用是清空屏幕并将光标移至左上角
+#ifdef _WIN32
+    #include <stdlib.h>
+    // Windows 使用 cls 命令清空屏幕
+    system("cls");
+#else
+    // macOS 和 Linux 使用 ANSI 转义序列清空屏幕
+    printf("\033[H\033[J");
+#endif
 }

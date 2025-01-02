@@ -1,3 +1,6 @@
+//pathfinder.cpp
+// Created by Prelina  on 24-12-30.
+//
 #include <stdio.h>
 #include "maze.h"
 

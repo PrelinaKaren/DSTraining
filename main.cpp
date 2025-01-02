@@ -1,10 +1,11 @@
+//main.cpp
 #include <stdio.h>
 #include "maze.h"
 
+/*Prelina:测试的时候发现在Windows CMD下运行会乱码，
+ *所以加了这个部分，如果监测到运行环境是Windows，则配置Windows控制台为UTF-8编码*/
 #ifdef _WIN32
 #include <windows.h>
-
-// 配置控制台为 UTF-8 编码
 void ConfigureConsoleForUTF8() {
     UINT currentCP = GetConsoleOutputCP();
     if (currentCP != 65001) {
@@ -46,7 +47,7 @@ void Menu() {
             case 3:
                 GenerateMaze(rows, cols);
                 printf("迷宫已重新生成！\n");
-                DisplayMaze(rows, cols); // 修复遗漏：重新生成后显示新迷宫
+                DisplayMaze(rows, cols); // 重新生成后显示新迷宫
                 break;
             case 4:
                 printf("是否显示每次尝试生成的迷宫？(y/n): ");
